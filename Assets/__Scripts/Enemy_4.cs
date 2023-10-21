@@ -172,6 +172,10 @@ public class Enemy_4 : Enemy {
                 // It's not protected, so make it take damage
                 // Get the damage amount from the Projectile.type and Main.W_DEFS
                 prtHit.health -= Main.GetWeaponDefinition(p.type).damageOnHit;
+                if (Main.GetWeaponDefinition(p.type).continuousDamage > 0f)
+                {
+                   StartCoroutine(continuousDamage(p, prtHit));
+                }
                 // Show damage on the part
                 ShowLocalizedDamage(prtHit.mat);
                 if(prtHit.health <= 0)
@@ -198,6 +202,17 @@ public class Enemy_4 : Enemy {
                 }
                 Destroy(other); // Destroy the ProjectileHero
                 break;
+        }
+
+        IEnumerator continuousDamage(Projectile p, Part prt)
+        {
+            float counter = 0;
+            while (counter < 5f)
+            {
+                prt.health -= Main.GetWeaponDefinition(p.type).continuousDamage * Time.deltaTime;
+                counter += Time.deltaTime;
+                yield return null;
+            }
         }
     }
 }

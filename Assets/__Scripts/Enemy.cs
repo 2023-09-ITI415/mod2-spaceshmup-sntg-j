@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour {
@@ -68,7 +69,17 @@ public class Enemy : MonoBehaviour {
         tempPos.y -= speed * Time.deltaTime;
         pos = tempPos;
     }
-
+    private IEnumerator continuousDamage(Projectile p, GameObject other)
+    {
+        float counter = 0;
+        while (counter < 5f)
+        {
+            health -= Main.GetWeaponDefinition(p.type).continuousDamage * Time.deltaTime;
+            counter += Time.deltaTime;
+            Destroyed(other);
+            yield return health;
+        }
+    }
     private void OnCollisionEnter(Collision coll)
     {
         GameObject otherGO = coll.gameObject;
@@ -87,18 +98,11 @@ public class Enemy : MonoBehaviour {
                 ShowDamage();
                 // Get the damage amount from the Main WEAP_DICT
                 health -= Main.GetWeaponDefinition(p.type).damageOnHit;
-                if(health <= 0)
+                if(Main.GetWeaponDefinition(p.type).continuousDamage > 0f)
                 {
-                    // Tell the Main singleton that this ship was destroyed
-                    if (!notifiedOfDestruction)
-                    {
-                        Main.S.ShipDestroyed(this);
-                    }
-                    notifiedOfDestruction = true;
-                    // Destroy this enemy
-                    Destroy(this.gameObject);
+                    StartCoroutine(continuousDamage(p, otherGO));
                 }
-                Destroy(otherGO);
+                Destroyed(otherGO);
                 break;
 
             default:
@@ -106,7 +110,21 @@ public class Enemy : MonoBehaviour {
                 break;
         }
     }
-
+    void Destroyed(GameObject otherGO)
+    {
+        if (health <= 0)
+        {
+            // Tell the Main singleton that this ship was destroyed
+            if (!notifiedOfDestruction)
+            {
+                Main.S.ShipDestroyed(this);
+            }
+            notifiedOfDestruction = true;
+            // Destroy this enemy
+            Destroy(this.gameObject);
+        }
+        Destroy(otherGO);
+    }
     void ShowDamage()
     {
         foreach (Material m in materials)

@@ -14,6 +14,8 @@ public class Hero : MonoBehaviour {
     public GameObject projectilePrefab;
     public float projectileSpeed = 40;
     public Weapon[] weapons;
+    float xAxis;
+    float yAxis;
 
     [Header("Set Dynamically")]
     [SerializeField]
@@ -48,8 +50,8 @@ public class Hero : MonoBehaviour {
 	void Update()
     {
         // Pull in information from the Input class
-        float xAxis = Input.GetAxis("Horizontal");
-        float yAxis = Input.GetAxis("Vertical");
+        xAxis = Input.GetAxis("Horizontal");
+        yAxis = Input.GetAxis("Vertical");
 
         // Change transform.position based on the axes
         Vector3 pos = transform.position;
